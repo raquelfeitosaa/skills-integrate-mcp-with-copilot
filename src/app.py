@@ -6,20 +6,22 @@ for extracurricular activities at Mergington High School.
 """
 
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
 
+
 app = FastAPI(title="Mergington High School API",
-              description="API for viewing and signing up for extracurricular activities")
+              description="API for viewing and signing up for extracurricular activities and saving ideas")
 
 # Mount the static files directory
 current_dir = Path(__file__).parent
 app.mount("/static", StaticFiles(directory=os.path.join(Path(__file__).parent,
           "static")), name="static")
 
-# In-memory activity database
+ # In-memory activity database
 activities = {
     "Chess Club": {
         "description": "Learn strategies and compete in chess tournaments",
@@ -76,6 +78,45 @@ activities = {
         "participants": ["charlotte@mergington.edu", "henry@mergington.edu"]
     }
 }
+
+# In-memory ideas database
+class Idea(BaseModel):
+    id: int
+    title: str
+    description: str
+
+ideas = []
+next_idea_id = 1
+@app.get("/ideas")
+def list_ideas():
+    return ideas
+
+
+@app.post("/ideas")
+def add_idea(idea: Idea):
+    global next_idea_id
+    idea.id = next_idea_id
+    next_idea_id += 1
+    ideas.append(idea)
+    return idea
+
+
+@app.put("/ideas/{idea_id}")
+def update_idea(idea_id: int, updated: Idea):
+    for idx, idea in enumerate(ideas):
+        if idea.id == idea_id:
+            ideas[idx] = updated
+            return updated
+    raise HTTPException(status_code=404, detail="Idea not found")
+
+
+@app.delete("/ideas/{idea_id}")
+def delete_idea(idea_id: int):
+    for idx, idea in enumerate(ideas):
+        if idea.id == idea_id:
+            del ideas[idx]
+            return {"message": "Idea deleted"}
+    raise HTTPException(status_code=404, detail="Idea not found")
 
 
 @app.get("/")

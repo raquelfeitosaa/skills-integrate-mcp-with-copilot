@@ -4,6 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  // Ideias
+  const ideaForm = document.getElementById("idea-form");
+  const ideasList = document.getElementById("ideas-list");
+
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
@@ -12,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Clear loading message
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -64,6 +69,30 @@ document.addEventListener("DOMContentLoaded", () => {
       activitiesList.innerHTML =
         "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
+    }
+  }
+
+  // Function to fetch ideas from API
+  async function fetchIdeas() {
+    try {
+      const response = await fetch("/ideas");
+      const ideas = await response.json();
+      ideasList.innerHTML = "";
+      ideas.forEach((idea) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${idea.title}</strong>: ${idea.description} <button class="delete-idea-btn" data-id="${idea.id}">🗑️</button>`;
+        ideasList.appendChild(li);
+      });
+      // Add delete listeners
+      document.querySelectorAll(".delete-idea-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const id = btn.getAttribute("data-id");
+          await fetch(`/ideas/${id}`, { method: "DELETE" });
+          fetchIdeas();
+        });
+      });
+    } catch (error) {
+      ideasList.innerHTML = "<li>Erro ao carregar ideias.</li>";
     }
   }
 
@@ -155,6 +184,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Handle idea form submission
+  if (ideaForm) {
+    ideaForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const title = document.getElementById("idea-title").value;
+      const description = document.getElementById("idea-desc").value;
+      await fetch("/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: 0, title, description })
+      });
+      ideaForm.reset();
+      fetchIdeas();
+    });
+  }
+
   // Initialize app
   fetchActivities();
+  fetchIdeas();
 });
