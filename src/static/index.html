@@ -12,6 +12,7 @@
       <h2>Extracurricular Activities</h2>
     </header>
 
+
     <main>
       <section id="activities-container">
         <h3>Available Activities</h3>
@@ -38,6 +39,22 @@
           <button type="submit">Sign Up</button>
         </form>
         <div id="message" class="hidden"></div>
+      </section>
+
+      <section id="ideas-container">
+        <h3>Ideias</h3>
+        <form id="idea-form">
+          <div class="form-group">
+            <label for="idea-title">Título:</label>
+            <input type="text" id="idea-title" required placeholder="Título da ideia" />
+          </div>
+          <div class="form-group">
+            <label for="idea-desc">Descrição:</label>
+            <input type="text" id="idea-desc" required placeholder="Descrição da ideia" />
+          </div>
+          <button type="submit">Salvar Ideia</button>
+        </form>
+        <ul id="ideas-list"></ul>
       </section>
     </main>
 
